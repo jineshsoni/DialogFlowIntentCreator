@@ -29,8 +29,8 @@ data class Response(
 data class Parameter(
 //    val id: String,
     var name: String = "",
-    val dataType: String = if (name == "") "" else "@$name",
-    val value: String = name,
+    var dataType: String = if (name == "") "" else "@$name",
+    var value: String = name,
     val isList: Boolean = false,
     val required: Boolean = false,
     val noInputPromptMessages: List<Any> = ArrayList<Any>(),
