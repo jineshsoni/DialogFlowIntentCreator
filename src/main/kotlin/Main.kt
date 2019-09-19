@@ -1,5 +1,9 @@
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import dao.*
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.apache.xmlbeans.impl.xb.xsdschema.All
 import java.io.File
 import java.io.FileInputStream
 
@@ -37,6 +41,7 @@ fun openFile(fileName: String) {
     }
 
     log("Parsing Done")
+    log("sheetModelArray == $sheetModelArray")
 //
 //    log("Deleting Old Files")
 //
@@ -47,6 +52,47 @@ fun openFile(fileName: String) {
 //        }
 //    }
 
+    val distinctKeys = sheetModelArray[0].rowDataArray.distinctBy { it.key }
+
+    distinctKeys.forEach { distKeys->
+        log("Key == ${distKeys.key}")
+        val addDataWithThisKey = sheetModelArray[0].rowDataArray.filter{it.key == distKeys.key}
+        log("All data with ${distKeys.key} == $addDataWithThisKey")
+        val fileNamePrefix = distKeys.key
+        val allJson = AllJson()
+        allJson.name = fileNamePrefix.stringCellValue
+        val responses = ArrayList<Response>()
+        val resp = Response()
+
+        val params = Parameter()
+        val message = Message()
+        params.name = distKeys.entity.stringCellValue
+        message.speech = distKeys.entity.stringCellValue
+
+        val paramsArray = ArrayList<Parameter>()
+        paramsArray.add(params)
+
+        val messageArray = ArrayList<Message>()
+        messageArray.add(message)
+
+        resp.parameters = paramsArray
+        resp.messages = messageArray
+        responses.add(resp)
+
+        allJson.responses = responses
+        val allJsonJSON = Gson().toJson(allJson)
+
+        val allJsonFile = File("$resPath/output/${fileNamePrefix}_all.json")
+        allJsonFile.writeText(allJsonJSON)
+
+
+        log(" allJson JSON == $allJsonJSON")
+
+        val userSaysEnArray = ArrayList<UserSaysEn>()
+
+    }
+
+
     log("Generating Files")
 
     sheetModelArray.forEach {
@@ -55,6 +101,9 @@ fun openFile(fileName: String) {
 
     workbook.close()
     excelFile.close()
+
+
+
 }
 
 fun parseSheet(sheet: Sheet, parsedData: (SheetModel) -> Unit) {
@@ -62,57 +111,40 @@ fun parseSheet(sheet: Sheet, parsedData: (SheetModel) -> Unit) {
     val rows = sheet.iterator()
     val checkRow = sheet.iterator().iterator().next()
 
-    if (checkRow.getCell(0).stringCellValue == "ios_key") {
+    val sheetModel = SheetModel()
+    sheetModel.name = sheet.sheetName
 
-        val sheetModel = SheetModel()
-        sheetModel.name = sheet.sheetName
+    log("sheet == $sheet")
 
-        val dataArray = ArrayList<RowData>()
+    val dataArray = ArrayList<RowData>()
 
-        rows.forEach { currentRow ->
-
-            /***
-            val iosKey = currentRow.getCell(0)
-            val androidKey = currentRow.getCell(1)
-            val english = currentRow.getCell(2)
-            val portugies = currentRow.getCell(3)
-            val spanish = currentRow.getCell(4)
-            val german = currentRow.getCell(5)
-            val polish = currentRow.getCell(6)
-            val russian = currentRow.getCell(7)
-            val french = currentRow.getCell(8)
-            val italian = currentRow.getCell(9)
-            val greek = currentRow.getCell(10)
-            val arabic = currentRow.getCell(11)
-            val hebrew = currentRow.getCell(12)
-            val japanese = currentRow.getCell(13)
-            val chinese = currentRow.getCell(14)
-             */
-
-            if (currentRow.getCell(0).stringCellValue != "") {
-
-                val data = RowData(
-                    iosKey = currentRow.getCell(0),
-                    androidKey = currentRow.getCell(1),
-                    english = currentRow.getCell(2),
-                    portugies = currentRow.getCell(3),
-                    spanish = currentRow.getCell(4),
-                    german = currentRow.getCell(5),
-                    russian = currentRow.getCell(7),
-                    french = currentRow.getCell(8),
-                    italian = currentRow.getCell(9),
-                    greek = currentRow.getCell(10),
-                    hebrew = currentRow.getCell(12)
-                )
-
-                dataArray.add(data)
+    rows.forEach { currentRow ->
 
 
-            }
+
+        /***
+        val key = currentRow.getCell(0)
+        val productName = currentRow.getCell(1)
+        val entity = currentRow.getCell(2)
+        val speechText = currentRow.getCell(3)
+
+         */
+
+        if (currentRow.getCell(0).stringCellValue != "") {
+
+            val data = RowData(
+                key = currentRow.getCell(0),
+                productName = currentRow.getCell(1),
+                entity = currentRow.getCell(2),
+                speechText = currentRow.getCell(3)
+            )
+
+//            log("currentRow  data == $data")
+            dataArray.add(data)
         }
-
-        sheetModel.rowDataArray = dataArray
-        parsedData(sheetModel)
-        log("----------")
     }
+
+    sheetModel.rowDataArray = dataArray
+    parsedData(sheetModel)
+    log("----------")
 }

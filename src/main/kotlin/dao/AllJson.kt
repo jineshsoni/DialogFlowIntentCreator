@@ -1,5 +1,7 @@
 package dao
 
+import java.io.Serializable
+
 data class AllJson(
     val auto: Boolean = true,
     val conditionalResponses: List<Any> = ArrayList<Any>(),
@@ -9,19 +11,19 @@ data class AllJson(
 //    val id: String,
     var name: String = "",
     val priority: Int = 500000,
-    val responses: List<Response> = ArrayList<Response>(),
+    var responses: List<Response> = ArrayList<Response>(),
     val webhookForSlotFilling: Boolean = false,
     val webhookUsed: Boolean = false
-)
+): Serializable
 
 data class Response(
-    val affectedContexts: List<Any>,
+    val affectedContexts: List<Any> = ArrayList(),
 //    val defaultResponsePlatforms: DefaultResponsePlatforms,
-    val messages: List<Message> = ArrayList<Message>(),
-    val parameters: List<Parameter> = ArrayList<Parameter>(),
+    var messages: List<Message> = ArrayList<Message>(),
+    var parameters: List<Parameter> = ArrayList<Parameter>(),
     val resetContexts: Boolean = false,
     val speech: List<Any> = ArrayList<Any>()
-)
+): Serializable
 
 
 data class Parameter(
@@ -35,14 +37,14 @@ data class Parameter(
     val noMatchPromptMessages: List<Any> = ArrayList<Any>(),
     val outputDialogContexts: List<Any> = ArrayList<Any>(),
     val promptMessages: List<Any> = ArrayList<Any>()
-)
+): Serializable
 
 data class Message(
     val condition: String = "",
     val lang: String = "en",
     var speech: String = "",
     val type: Int = 0
-)
+): Serializable
 
 class DefaultResponsePlatforms(
-)
+): Serializable
